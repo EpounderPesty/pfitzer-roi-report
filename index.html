@@ -6,8 +6,7 @@
 <title>Pfitzer Pest Control — Revenue & Lead Attribution Report</title>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script src="https://unpkg.com/recharts/umd/Recharts.js"></script>
+<script src="https://unpkg.com/recharts/umd/Recharts.js" crossorigin></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F5F7FA;color:#1B2A4A}
@@ -19,416 +18,2065 @@ table{border-collapse:collapse;width:100%}
 </head>
 <body>
 <div id="root"></div>
-<script type="text/babel">
-const {useState,useMemo}=React;
-const {BarChart,Bar,XAxis,YAxis,CartesianGrid,Tooltip,Legend,ResponsiveContainer,ReferenceLine,Line,LineChart,Cell}=Recharts;
-
-const C={navy:"#1B2A4A",red:"#C0392B",gold:"#D4A843",green:"#2E7D5E",muted:"#6B7A99",border:"#DDE3EE",light:"#F5F7FA",white:"#FFFFFF",teal:"#1A7B8A"};
-
-const revenueOverview=[{year:"2025",customers:195,revenue:92940.87},{year:"2026",customers:382,revenue:129638.50}];
-const monthlyGBP=[{month:"Feb",total:4,qualified:2,qualRate:50.0},{month:"Mar",total:587,qualified:26,qualRate:4.4},{month:"Apr",total:281,qualified:26,qualRate:9.3},{month:"May",total:218,qualified:33,qualRate:15.1},{month:"Jun",total:226,qualified:15,qualRate:6.6}];
-const gbpBeforeAfter=[{period:"Before Apr 9",total:631,qualified:33,rate:5.2},{period:"After Apr 9",total:685,qualified:69,rate:10.1}];
-const digitalSources=[{source:"Google Search",rev2025:23818.66,rev2026:45509.02,c25:41,c26:96},{source:"Website",rev2025:5550.90,rev2026:8879.50,c25:12,c26:24},{source:"Google LSA's",rev2025:2671.40,rev2026:2445.75,c25:6,c26:7}];
-const allSources=[{source:"Google Search",c25:41,r25:23818.66,c26:96,r26:45509.02},{source:"Current Customer",c25:17,r25:6031.51,c26:62,r26:17436.57},{source:"Unknown Source",c25:7,r25:1812.50,c26:9,r26:15702.05},{source:"Referral",c25:32,r25:13286.09,c26:58,r26:12203.55},{source:"Website",c25:12,r25:5550.90,c26:24,r26:8879.50},{source:"Word of Mouth",c25:14,r25:5366.63,c26:35,r26:7763.85},{source:"Shared Bill-To",c25:15,r25:7848.32,c26:24,r26:5162.06},{source:"Saw us out working",c25:8,r25:2049.63,c26:13,r26:3290.00},{source:"Reactivation",c25:5,r25:4606.00,c26:7,r26:3052.65},{source:"Google LSA's",c25:6,r25:2671.40,c26:7,r26:2445.75},{source:"Personal Contact",c25:12,r25:9435.93,c26:19,r26:1842.50}];
-const reconData=[
-{cid:4423,crm_source:"Google Search",arv:187.5,location:"Huron",sold:"05/15/26",callrail_source:"GBP",match_type:"Phone Match"},
-{cid:4581,crm_source:"Google Search",arv:1080,location:"Aberdeen",sold:"03/05/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:4689,crm_source:"Google Search",arv:498.76,location:"Huron",sold:"05/04/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:5610,crm_source:"Google Search",arv:784.95,location:"Huron",sold:"04/24/26",callrail_source:"GBP",match_type:"Phone Match"},
-{cid:6177,crm_source:"Google Search",arv:783.75,location:"Sheridan",sold:"05/13/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:6214,crm_source:"Google Search",arv:488.25,location:"Aberdeen",sold:"03/23/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:6658,crm_source:"Google Search",arv:280,location:"Huron",sold:"04/29/26",callrail_source:"GBP",match_type:"Phone Match"},
-{cid:6663,crm_source:"Google Search",arv:280,location:"Mobridge",sold:"05/01/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:6922,crm_source:"Google Search",arv:202.5,location:"Aberdeen",sold:"03/26/26",callrail_source:"GBP",match_type:"Phone Match"},
-{cid:7152,crm_source:"Google Search",arv:527.64,location:"Aberdeen",sold:"06/09/26",callrail_source:"GBP",match_type:"Phone Match"},
-{cid:7252,crm_source:"Google Search",arv:595,location:"Sheridan",sold:"02/26/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:7382,crm_source:"Google Search",arv:908.45,location:"Sheridan",sold:"03/09/26",callrail_source:"GBP",match_type:"Phone Match"},
-{cid:7464,crm_source:"Google Search",arv:1080,location:"Sheridan",sold:"03/12/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:7523,crm_source:"Google Search",arv:409.5,location:"Huron",sold:"04/28/26",callrail_source:"GBP",match_type:"Phone Match"},
-{cid:8338,crm_source:"Google Search",arv:738.75,location:"Huron",sold:"04/13/26",callrail_source:"GBP",match_type:"Phone Match"},
-{cid:8345,crm_source:"Google Search",arv:395,location:"Sheridan",sold:"05/20/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:8521,crm_source:"Google Search",arv:100,location:"Sheridan",sold:"01/09/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:8659,crm_source:"Google Search",arv:360,location:"Sheridan",sold:"04/24/26",callrail_source:"GBP",match_type:"Phone Match"},
-{cid:8701,crm_source:"Google Search",arv:277.5,location:"Sheridan",sold:"02/16/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:8797,crm_source:"Google Search",arv:576,location:"Huron",sold:"02/04/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:8807,crm_source:"Google Search",arv:355,location:"Aberdeen",sold:"04/21/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:8808,crm_source:"Google Search",arv:360,location:"Huron",sold:"03/03/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:8812,crm_source:"Google Search",arv:360,location:"Huron",sold:"03/20/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:8822,crm_source:"Google Search",arv:360,location:"Huron",sold:"01/14/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:8827,crm_source:"Google Search",arv:336,location:"Huron",sold:"05/01/26",callrail_source:"GBP",match_type:"Phone Match"},
-{cid:8830,crm_source:"Google Search",arv:738.75,location:"Aberdeen",sold:"01/07/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:8841,crm_source:"Google Search",arv:540,location:"Sheridan",sold:"01/15/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:8858,crm_source:"Google Search",arv:432,location:"Mobridge",sold:"02/11/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:8859,crm_source:"Google Search",arv:1110,location:"Sheridan",sold:"01/15/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:8866,crm_source:"Google Search",arv:472.5,location:"Sheridan",sold:"02/06/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:8878,crm_source:"Google Search",arv:2307,location:"Mobridge",sold:"02/23/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:8914,crm_source:"Google Search",arv:1080,location:"Sheridan",sold:"03/04/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:8930,crm_source:"Google Search",arv:1237.51,location:"Aberdeen",sold:"02/23/26",callrail_source:"GBP",match_type:"Phone Match"},
-{cid:8942,crm_source:"Google Search",arv:430,location:"Huron",sold:"03/13/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:8943,crm_source:"Google Search",arv:11125,location:"Sheridan",sold:"03/20/26",callrail_source:"GBP",match_type:"Phone Match"},
-{cid:8963,crm_source:"Google Search",arv:330,location:"Aberdeen",sold:"03/23/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:8975,crm_source:"Google Search",arv:324,location:"Mobridge",sold:"03/24/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:8984,crm_source:"Google Search",arv:355,location:"Mobridge",sold:"03/30/26",callrail_source:"GBP",match_type:"Phone Match"},
-{cid:8986,crm_source:"Google Search",arv:540,location:"Sheridan",sold:"04/30/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:8988,crm_source:"Google Search",arv:455,location:"Aberdeen",sold:"04/08/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:8990,crm_source:"Google Search",arv:340.1,location:"Sheridan",sold:"04/09/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:8991,crm_source:"Google Search",arv:430,location:"Aberdeen",sold:"03/31/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:9007,crm_source:"Google Search",arv:240,location:"Aberdeen",sold:"04/28/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:9029,crm_source:"Google Search",arv:1596.25,location:"Huron",sold:"04/22/26",callrail_source:"GBP",match_type:"Phone Match"},
-{cid:9037,crm_source:"Google Search",arv:280,location:"Mobridge",sold:"05/13/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:9057,crm_source:"Google Search",arv:305,location:"Mobridge",sold:"05/01/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:9058,crm_source:"Google Search",arv:370,location:"Sheridan",sold:"05/04/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:9066,crm_source:"Google Search",arv:626.25,location:"Sheridan",sold:"05/06/26",callrail_source:"GBP",match_type:"Phone Match"},
-{cid:9073,crm_source:"Google Search",arv:360,location:"Aberdeen",sold:"06/09/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:9088,crm_source:"Google Search",arv:300,location:"Sheridan",sold:"06/03/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:9101,crm_source:"Google Search",arv:567,location:"Aberdeen",sold:"05/13/26",callrail_source:"GBP",match_type:"Phone Match"},
-{cid:9109,crm_source:"Google Search",arv:177.5,location:"Huron",sold:"05/15/26",callrail_source:"GBP",match_type:"Phone Match"},
-{cid:9122,crm_source:"Google Search",arv:516,location:"Sheridan",sold:"05/20/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:9147,crm_source:"Google Search",arv:280,location:"Huron",sold:"05/27/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:9160,crm_source:"Google Search",arv:551.25,location:"Sheridan",sold:"05/29/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:9161,crm_source:"Google Search",arv:470,location:"Sheridan",sold:"05/29/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:9166,crm_source:"Google Search",arv:430,location:"Mobridge",sold:"06/01/26",callrail_source:"GBP",match_type:"Phone Match"},
-{cid:9178,crm_source:"Google Search",arv:355,location:"Mobridge",sold:"06/04/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:9188,crm_source:"Google Search",arv:445,location:"Sheridan",sold:"06/05/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:9190,crm_source:"Google Search",arv:1050,location:"Gillette",sold:"06/06/26",callrail_source:"GBP",match_type:"Phone Match"},
-{cid:9206,crm_source:"Google Search",arv:430,location:"Aberdeen",sold:"06/11/26",callrail_source:"Google Organic",match_type:"Source Match"},
-{cid:4863,crm_source:"Website",arv:470,location:"Sheridan",sold:"03/24/26",callrail_source:"Website",match_type:"Source Match"},
-{cid:6971,crm_source:"Website",arv:810,location:"Sheridan",sold:"05/18/26",callrail_source:"Website",match_type:"Source Match"},
-{cid:7092,crm_source:"Website",arv:300,location:"Sheridan",sold:"02/05/26",callrail_source:"Website",match_type:"Source Match"},
-{cid:7285,crm_source:"Website",arv:288,location:"Huron",sold:"04/08/26",callrail_source:"Website",match_type:"Source Match"},
-{cid:7431,crm_source:"Website",arv:240,location:"Mobridge",sold:"02/17/26",callrail_source:"Website",match_type:"Source Match"},
-{cid:7781,crm_source:"Website",arv:240,location:"Huron",sold:"02/02/26",callrail_source:"Website",match_type:"Source Match"},
-{cid:7877,crm_source:"Website",arv:355,location:"Huron",sold:"05/19/26",callrail_source:"Website",match_type:"Source Match"},
-{cid:8768,crm_source:"Website",arv:240,location:"Huron",sold:"01/14/26",callrail_source:"Website",match_type:"Source Match"},
-{cid:8853,crm_source:"Website",arv:240,location:"Huron",sold:"01/20/26",callrail_source:"Website",match_type:"Source Match"},
-{cid:8890,crm_source:"Website",arv:1800,location:"Sheridan",sold:"05/15/26",callrail_source:"Website",match_type:"Source Match"},
-{cid:8940,crm_source:"Website",arv:432,location:"Aberdeen",sold:"05/27/26",callrail_source:"Website",match_type:"Source Match"},
-{cid:8999,crm_source:"Website",arv:630,location:"Huron",sold:"04/08/26",callrail_source:"Website",match_type:"Source Match"},
-{cid:9030,crm_source:"Website",arv:280,location:"Mobridge",sold:"04/22/26",callrail_source:"Website",match_type:"Source Match"},
-{cid:9081,crm_source:"Website",arv:185,location:"Sheridan",sold:"05/11/26",callrail_source:"Website",match_type:"Source Match"},
-{cid:9087,crm_source:"Website",arv:540,location:"Sheridan",sold:"06/03/26",callrail_source:"Website",match_type:"Source Match"},
-{cid:9089,crm_source:"Website",arv:360,location:"Mobridge",sold:"05/12/26",callrail_source:"Website",match_type:"Source Match"},
-{cid:9111,crm_source:"Website",arv:280,location:"Aberdeen",sold:"05/21/26",callrail_source:"Website",match_type:"Source Match"},
-{cid:9145,crm_source:"Website",arv:405,location:"Huron",sold:"06/05/26",callrail_source:"Website",match_type:"Source Match"},
-{cid:9154,crm_source:"Website",arv:488.25,location:"Mobridge",sold:"05/28/26",callrail_source:"Website",match_type:"Source Match"},
-{cid:7552,crm_source:"Google LSA's",arv:551.25,location:"Sheridan",sold:"03/04/26",callrail_source:"LSA",match_type:"Source Match"},
-{cid:9019,crm_source:"Google LSA's",arv:484.5,location:"Aberdeen",sold:"05/28/26",callrail_source:"LSA",match_type:"Source Match"},
-{cid:9172,crm_source:"Google LSA's",arv:1410,location:"Sheridan",sold:"06/02/26",callrail_source:"LSA",match_type:"Source Match"},
-];
-
-const fmt$=v=>v.toLocaleString("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0});
-const fmtD=v=>v.toLocaleString("en-US",{style:"currency",currency:"USD",minimumFractionDigits:2,maximumFractionDigits:2});
-
-function KPI({label,value,sub,accent,big}){
-  return <div style={{background:C.white,border:`1px solid ${C.border}`,borderTop:`4px solid ${accent||C.navy}`,borderRadius:8,padding:"16px 18px",display:"flex",flexDirection:"column",gap:3}}>
-    <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.09em",color:C.muted,textTransform:"uppercase"}}>{label}</div>
-    <div style={{fontSize:big?26:20,fontWeight:800,color:C.navy,lineHeight:1.1}}>{value}</div>
-    {sub&&<div style={{fontSize:12,color:accent||C.muted,fontWeight:600}}>{sub}</div>}
-  </div>;
+<script>
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t.return && (u = t.return(), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+var _React = React,
+  useState = _React.useState,
+  useMemo = _React.useMemo;
+var _Recharts = Recharts,
+  BarChart = _Recharts.BarChart,
+  Bar = _Recharts.Bar,
+  XAxis = _Recharts.XAxis,
+  YAxis = _Recharts.YAxis,
+  CartesianGrid = _Recharts.CartesianGrid,
+  Tooltip = _Recharts.Tooltip,
+  Legend = _Recharts.Legend,
+  ResponsiveContainer = _Recharts.ResponsiveContainer,
+  ReferenceLine = _Recharts.ReferenceLine,
+  Line = _Recharts.Line,
+  LineChart = _Recharts.LineChart,
+  Cell = _Recharts.Cell;
+var C = {
+  navy: "#1B2A4A",
+  red: "#C0392B",
+  gold: "#D4A843",
+  green: "#2E7D5E",
+  muted: "#6B7A99",
+  border: "#DDE3EE",
+  light: "#F5F7FA",
+  white: "#FFFFFF",
+  teal: "#1A7B8A"
+};
+var revenueOverview = [{
+  year: "2025",
+  customers: 195,
+  revenue: 92940.87
+}, {
+  year: "2026",
+  customers: 382,
+  revenue: 129638.50
+}];
+var monthlyGBP = [{
+  month: "Feb",
+  total: 4,
+  qualified: 2,
+  qualRate: 50.0
+}, {
+  month: "Mar",
+  total: 587,
+  qualified: 26,
+  qualRate: 4.4
+}, {
+  month: "Apr",
+  total: 281,
+  qualified: 26,
+  qualRate: 9.3
+}, {
+  month: "May",
+  total: 218,
+  qualified: 33,
+  qualRate: 15.1
+}, {
+  month: "Jun",
+  total: 226,
+  qualified: 15,
+  qualRate: 6.6
+}];
+var gbpBeforeAfter = [{
+  period: "Before Apr 9",
+  total: 631,
+  qualified: 33,
+  rate: 5.2
+}, {
+  period: "After Apr 9",
+  total: 685,
+  qualified: 69,
+  rate: 10.1
+}];
+var digitalSources = [{
+  source: "Google Search",
+  rev2025: 23818.66,
+  rev2026: 45509.02,
+  c25: 41,
+  c26: 96
+}, {
+  source: "Website",
+  rev2025: 5550.90,
+  rev2026: 8879.50,
+  c25: 12,
+  c26: 24
+}, {
+  source: "Google LSA's",
+  rev2025: 2671.40,
+  rev2026: 2445.75,
+  c25: 6,
+  c26: 7
+}];
+var allSources = [{
+  source: "Google Search",
+  c25: 41,
+  r25: 23818.66,
+  c26: 96,
+  r26: 45509.02
+}, {
+  source: "Current Customer",
+  c25: 17,
+  r25: 6031.51,
+  c26: 62,
+  r26: 17436.57
+}, {
+  source: "Unknown Source",
+  c25: 7,
+  r25: 1812.50,
+  c26: 9,
+  r26: 15702.05
+}, {
+  source: "Referral",
+  c25: 32,
+  r25: 13286.09,
+  c26: 58,
+  r26: 12203.55
+}, {
+  source: "Website",
+  c25: 12,
+  r25: 5550.90,
+  c26: 24,
+  r26: 8879.50
+}, {
+  source: "Word of Mouth",
+  c25: 14,
+  r25: 5366.63,
+  c26: 35,
+  r26: 7763.85
+}, {
+  source: "Shared Bill-To",
+  c25: 15,
+  r25: 7848.32,
+  c26: 24,
+  r26: 5162.06
+}, {
+  source: "Saw us out working",
+  c25: 8,
+  r25: 2049.63,
+  c26: 13,
+  r26: 3290.00
+}, {
+  source: "Reactivation",
+  c25: 5,
+  r25: 4606.00,
+  c26: 7,
+  r26: 3052.65
+}, {
+  source: "Google LSA's",
+  c25: 6,
+  r25: 2671.40,
+  c26: 7,
+  r26: 2445.75
+}, {
+  source: "Personal Contact",
+  c25: 12,
+  r25: 9435.93,
+  c26: 19,
+  r26: 1842.50
+}];
+var reconData = [{
+  cid: 4423,
+  crm_source: "Google Search",
+  arv: 187.5,
+  location: "Huron",
+  sold: "05/15/26",
+  callrail_source: "GBP",
+  match_type: "Phone Match"
+}, {
+  cid: 4581,
+  crm_source: "Google Search",
+  arv: 1080,
+  location: "Aberdeen",
+  sold: "03/05/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 4689,
+  crm_source: "Google Search",
+  arv: 498.76,
+  location: "Huron",
+  sold: "05/04/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 5610,
+  crm_source: "Google Search",
+  arv: 784.95,
+  location: "Huron",
+  sold: "04/24/26",
+  callrail_source: "GBP",
+  match_type: "Phone Match"
+}, {
+  cid: 6177,
+  crm_source: "Google Search",
+  arv: 783.75,
+  location: "Sheridan",
+  sold: "05/13/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 6214,
+  crm_source: "Google Search",
+  arv: 488.25,
+  location: "Aberdeen",
+  sold: "03/23/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 6658,
+  crm_source: "Google Search",
+  arv: 280,
+  location: "Huron",
+  sold: "04/29/26",
+  callrail_source: "GBP",
+  match_type: "Phone Match"
+}, {
+  cid: 6663,
+  crm_source: "Google Search",
+  arv: 280,
+  location: "Mobridge",
+  sold: "05/01/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 6922,
+  crm_source: "Google Search",
+  arv: 202.5,
+  location: "Aberdeen",
+  sold: "03/26/26",
+  callrail_source: "GBP",
+  match_type: "Phone Match"
+}, {
+  cid: 7152,
+  crm_source: "Google Search",
+  arv: 527.64,
+  location: "Aberdeen",
+  sold: "06/09/26",
+  callrail_source: "GBP",
+  match_type: "Phone Match"
+}, {
+  cid: 7252,
+  crm_source: "Google Search",
+  arv: 595,
+  location: "Sheridan",
+  sold: "02/26/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 7382,
+  crm_source: "Google Search",
+  arv: 908.45,
+  location: "Sheridan",
+  sold: "03/09/26",
+  callrail_source: "GBP",
+  match_type: "Phone Match"
+}, {
+  cid: 7464,
+  crm_source: "Google Search",
+  arv: 1080,
+  location: "Sheridan",
+  sold: "03/12/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 7523,
+  crm_source: "Google Search",
+  arv: 409.5,
+  location: "Huron",
+  sold: "04/28/26",
+  callrail_source: "GBP",
+  match_type: "Phone Match"
+}, {
+  cid: 8338,
+  crm_source: "Google Search",
+  arv: 738.75,
+  location: "Huron",
+  sold: "04/13/26",
+  callrail_source: "GBP",
+  match_type: "Phone Match"
+}, {
+  cid: 8345,
+  crm_source: "Google Search",
+  arv: 395,
+  location: "Sheridan",
+  sold: "05/20/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 8521,
+  crm_source: "Google Search",
+  arv: 100,
+  location: "Sheridan",
+  sold: "01/09/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 8659,
+  crm_source: "Google Search",
+  arv: 360,
+  location: "Sheridan",
+  sold: "04/24/26",
+  callrail_source: "GBP",
+  match_type: "Phone Match"
+}, {
+  cid: 8701,
+  crm_source: "Google Search",
+  arv: 277.5,
+  location: "Sheridan",
+  sold: "02/16/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 8797,
+  crm_source: "Google Search",
+  arv: 576,
+  location: "Huron",
+  sold: "02/04/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 8807,
+  crm_source: "Google Search",
+  arv: 355,
+  location: "Aberdeen",
+  sold: "04/21/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 8808,
+  crm_source: "Google Search",
+  arv: 360,
+  location: "Huron",
+  sold: "03/03/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 8812,
+  crm_source: "Google Search",
+  arv: 360,
+  location: "Huron",
+  sold: "03/20/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 8822,
+  crm_source: "Google Search",
+  arv: 360,
+  location: "Huron",
+  sold: "01/14/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 8827,
+  crm_source: "Google Search",
+  arv: 336,
+  location: "Huron",
+  sold: "05/01/26",
+  callrail_source: "GBP",
+  match_type: "Phone Match"
+}, {
+  cid: 8830,
+  crm_source: "Google Search",
+  arv: 738.75,
+  location: "Aberdeen",
+  sold: "01/07/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 8841,
+  crm_source: "Google Search",
+  arv: 540,
+  location: "Sheridan",
+  sold: "01/15/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 8858,
+  crm_source: "Google Search",
+  arv: 432,
+  location: "Mobridge",
+  sold: "02/11/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 8859,
+  crm_source: "Google Search",
+  arv: 1110,
+  location: "Sheridan",
+  sold: "01/15/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 8866,
+  crm_source: "Google Search",
+  arv: 472.5,
+  location: "Sheridan",
+  sold: "02/06/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 8878,
+  crm_source: "Google Search",
+  arv: 2307,
+  location: "Mobridge",
+  sold: "02/23/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 8914,
+  crm_source: "Google Search",
+  arv: 1080,
+  location: "Sheridan",
+  sold: "03/04/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 8930,
+  crm_source: "Google Search",
+  arv: 1237.51,
+  location: "Aberdeen",
+  sold: "02/23/26",
+  callrail_source: "GBP",
+  match_type: "Phone Match"
+}, {
+  cid: 8942,
+  crm_source: "Google Search",
+  arv: 430,
+  location: "Huron",
+  sold: "03/13/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 8943,
+  crm_source: "Google Search",
+  arv: 11125,
+  location: "Sheridan",
+  sold: "03/20/26",
+  callrail_source: "GBP",
+  match_type: "Phone Match"
+}, {
+  cid: 8963,
+  crm_source: "Google Search",
+  arv: 330,
+  location: "Aberdeen",
+  sold: "03/23/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 8975,
+  crm_source: "Google Search",
+  arv: 324,
+  location: "Mobridge",
+  sold: "03/24/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 8984,
+  crm_source: "Google Search",
+  arv: 355,
+  location: "Mobridge",
+  sold: "03/30/26",
+  callrail_source: "GBP",
+  match_type: "Phone Match"
+}, {
+  cid: 8986,
+  crm_source: "Google Search",
+  arv: 540,
+  location: "Sheridan",
+  sold: "04/30/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 8988,
+  crm_source: "Google Search",
+  arv: 455,
+  location: "Aberdeen",
+  sold: "04/08/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 8990,
+  crm_source: "Google Search",
+  arv: 340.1,
+  location: "Sheridan",
+  sold: "04/09/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 8991,
+  crm_source: "Google Search",
+  arv: 430,
+  location: "Aberdeen",
+  sold: "03/31/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 9007,
+  crm_source: "Google Search",
+  arv: 240,
+  location: "Aberdeen",
+  sold: "04/28/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 9029,
+  crm_source: "Google Search",
+  arv: 1596.25,
+  location: "Huron",
+  sold: "04/22/26",
+  callrail_source: "GBP",
+  match_type: "Phone Match"
+}, {
+  cid: 9037,
+  crm_source: "Google Search",
+  arv: 280,
+  location: "Mobridge",
+  sold: "05/13/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 9057,
+  crm_source: "Google Search",
+  arv: 305,
+  location: "Mobridge",
+  sold: "05/01/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 9058,
+  crm_source: "Google Search",
+  arv: 370,
+  location: "Sheridan",
+  sold: "05/04/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 9066,
+  crm_source: "Google Search",
+  arv: 626.25,
+  location: "Sheridan",
+  sold: "05/06/26",
+  callrail_source: "GBP",
+  match_type: "Phone Match"
+}, {
+  cid: 9073,
+  crm_source: "Google Search",
+  arv: 360,
+  location: "Aberdeen",
+  sold: "06/09/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 9088,
+  crm_source: "Google Search",
+  arv: 300,
+  location: "Sheridan",
+  sold: "06/03/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 9101,
+  crm_source: "Google Search",
+  arv: 567,
+  location: "Aberdeen",
+  sold: "05/13/26",
+  callrail_source: "GBP",
+  match_type: "Phone Match"
+}, {
+  cid: 9109,
+  crm_source: "Google Search",
+  arv: 177.5,
+  location: "Huron",
+  sold: "05/15/26",
+  callrail_source: "GBP",
+  match_type: "Phone Match"
+}, {
+  cid: 9122,
+  crm_source: "Google Search",
+  arv: 516,
+  location: "Sheridan",
+  sold: "05/20/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 9147,
+  crm_source: "Google Search",
+  arv: 280,
+  location: "Huron",
+  sold: "05/27/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 9160,
+  crm_source: "Google Search",
+  arv: 551.25,
+  location: "Sheridan",
+  sold: "05/29/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 9161,
+  crm_source: "Google Search",
+  arv: 470,
+  location: "Sheridan",
+  sold: "05/29/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 9166,
+  crm_source: "Google Search",
+  arv: 430,
+  location: "Mobridge",
+  sold: "06/01/26",
+  callrail_source: "GBP",
+  match_type: "Phone Match"
+}, {
+  cid: 9178,
+  crm_source: "Google Search",
+  arv: 355,
+  location: "Mobridge",
+  sold: "06/04/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 9188,
+  crm_source: "Google Search",
+  arv: 445,
+  location: "Sheridan",
+  sold: "06/05/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 9190,
+  crm_source: "Google Search",
+  arv: 1050,
+  location: "Gillette",
+  sold: "06/06/26",
+  callrail_source: "GBP",
+  match_type: "Phone Match"
+}, {
+  cid: 9206,
+  crm_source: "Google Search",
+  arv: 430,
+  location: "Aberdeen",
+  sold: "06/11/26",
+  callrail_source: "Google Organic",
+  match_type: "Source Match"
+}, {
+  cid: 4863,
+  crm_source: "Website",
+  arv: 470,
+  location: "Sheridan",
+  sold: "03/24/26",
+  callrail_source: "Website",
+  match_type: "Source Match"
+}, {
+  cid: 6971,
+  crm_source: "Website",
+  arv: 810,
+  location: "Sheridan",
+  sold: "05/18/26",
+  callrail_source: "Website",
+  match_type: "Source Match"
+}, {
+  cid: 7092,
+  crm_source: "Website",
+  arv: 300,
+  location: "Sheridan",
+  sold: "02/05/26",
+  callrail_source: "Website",
+  match_type: "Source Match"
+}, {
+  cid: 7285,
+  crm_source: "Website",
+  arv: 288,
+  location: "Huron",
+  sold: "04/08/26",
+  callrail_source: "Website",
+  match_type: "Source Match"
+}, {
+  cid: 7431,
+  crm_source: "Website",
+  arv: 240,
+  location: "Mobridge",
+  sold: "02/17/26",
+  callrail_source: "Website",
+  match_type: "Source Match"
+}, {
+  cid: 7781,
+  crm_source: "Website",
+  arv: 240,
+  location: "Huron",
+  sold: "02/02/26",
+  callrail_source: "Website",
+  match_type: "Source Match"
+}, {
+  cid: 7877,
+  crm_source: "Website",
+  arv: 355,
+  location: "Huron",
+  sold: "05/19/26",
+  callrail_source: "Website",
+  match_type: "Source Match"
+}, {
+  cid: 8768,
+  crm_source: "Website",
+  arv: 240,
+  location: "Huron",
+  sold: "01/14/26",
+  callrail_source: "Website",
+  match_type: "Source Match"
+}, {
+  cid: 8853,
+  crm_source: "Website",
+  arv: 240,
+  location: "Huron",
+  sold: "01/20/26",
+  callrail_source: "Website",
+  match_type: "Source Match"
+}, {
+  cid: 8890,
+  crm_source: "Website",
+  arv: 1800,
+  location: "Sheridan",
+  sold: "05/15/26",
+  callrail_source: "Website",
+  match_type: "Source Match"
+}, {
+  cid: 8940,
+  crm_source: "Website",
+  arv: 432,
+  location: "Aberdeen",
+  sold: "05/27/26",
+  callrail_source: "Website",
+  match_type: "Source Match"
+}, {
+  cid: 8999,
+  crm_source: "Website",
+  arv: 630,
+  location: "Huron",
+  sold: "04/08/26",
+  callrail_source: "Website",
+  match_type: "Source Match"
+}, {
+  cid: 9030,
+  crm_source: "Website",
+  arv: 280,
+  location: "Mobridge",
+  sold: "04/22/26",
+  callrail_source: "Website",
+  match_type: "Source Match"
+}, {
+  cid: 9081,
+  crm_source: "Website",
+  arv: 185,
+  location: "Sheridan",
+  sold: "05/11/26",
+  callrail_source: "Website",
+  match_type: "Source Match"
+}, {
+  cid: 9087,
+  crm_source: "Website",
+  arv: 540,
+  location: "Sheridan",
+  sold: "06/03/26",
+  callrail_source: "Website",
+  match_type: "Source Match"
+}, {
+  cid: 9089,
+  crm_source: "Website",
+  arv: 360,
+  location: "Mobridge",
+  sold: "05/12/26",
+  callrail_source: "Website",
+  match_type: "Source Match"
+}, {
+  cid: 9111,
+  crm_source: "Website",
+  arv: 280,
+  location: "Aberdeen",
+  sold: "05/21/26",
+  callrail_source: "Website",
+  match_type: "Source Match"
+}, {
+  cid: 9145,
+  crm_source: "Website",
+  arv: 405,
+  location: "Huron",
+  sold: "06/05/26",
+  callrail_source: "Website",
+  match_type: "Source Match"
+}, {
+  cid: 9154,
+  crm_source: "Website",
+  arv: 488.25,
+  location: "Mobridge",
+  sold: "05/28/26",
+  callrail_source: "Website",
+  match_type: "Source Match"
+}, {
+  cid: 7552,
+  crm_source: "Google LSA's",
+  arv: 551.25,
+  location: "Sheridan",
+  sold: "03/04/26",
+  callrail_source: "LSA",
+  match_type: "Source Match"
+}, {
+  cid: 9019,
+  crm_source: "Google LSA's",
+  arv: 484.5,
+  location: "Aberdeen",
+  sold: "05/28/26",
+  callrail_source: "LSA",
+  match_type: "Source Match"
+}, {
+  cid: 9172,
+  crm_source: "Google LSA's",
+  arv: 1410,
+  location: "Sheridan",
+  sold: "06/02/26",
+  callrail_source: "LSA",
+  match_type: "Source Match"
+}];
+var fmt$ = function fmt$(v) {
+  return v.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0
+  });
+};
+var fmtD = function fmtD(v) {
+  return v.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+};
+function KPI(_ref) {
+  var label = _ref.label,
+    value = _ref.value,
+    sub = _ref.sub,
+    accent = _ref.accent,
+    big = _ref.big;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.white,
+      border: "1px solid ".concat(C.border),
+      borderTop: "4px solid ".concat(accent || C.navy),
+      borderRadius: 8,
+      padding: "16px 18px",
+      display: "flex",
+      flexDirection: "column",
+      gap: 3
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      fontWeight: 700,
+      letterSpacing: "0.09em",
+      color: C.muted,
+      textTransform: "uppercase"
+    }
+  }, label), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: big ? 26 : 20,
+      fontWeight: 800,
+      color: C.navy,
+      lineHeight: 1.1
+    }
+  }, value), sub && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: accent || C.muted,
+      fontWeight: 600
+    }
+  }, sub));
 }
-
-function SectionHead({eyebrow,title}){
-  return <div style={{marginBottom:20}}>
-    <div style={{fontSize:10,fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",color:C.red,marginBottom:4}}>{eyebrow}</div>
-    <div style={{fontSize:19,fontWeight:800,color:C.navy}}>{title}</div>
-    <div style={{height:3,width:40,background:C.red,marginTop:7,borderRadius:2}}/>
-  </div>;
+function SectionHead(_ref2) {
+  var eyebrow = _ref2.eyebrow,
+    title = _ref2.title;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 20
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      fontWeight: 800,
+      letterSpacing: "0.12em",
+      textTransform: "uppercase",
+      color: C.red,
+      marginBottom: 4
+    }
+  }, eyebrow), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 19,
+      fontWeight: 800,
+      color: C.navy
+    }
+  }, title), /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 3,
+      width: 40,
+      background: C.red,
+      marginTop: 7,
+      borderRadius: 2
+    }
+  }));
 }
-
-function Callout({type,children}){
-  const cfg={green:{bg:"#F0F7F4",border:C.green},gold:{bg:"#FFF8EC",border:C.gold},red:{bg:"#FDF0EF",border:C.red},navy:{bg:"#EEF1F7",border:C.navy}};
-  const s=cfg[type]||cfg.navy;
-  return <div style={{background:s.bg,border:`1px solid ${s.border}`,borderLeft:`5px solid ${s.border}`,borderRadius:8,padding:"14px 18px",marginBottom:16,fontSize:13,color:C.navy,lineHeight:1.7}}>{children}</div>;
+function Callout(_ref3) {
+  var type = _ref3.type,
+    children = _ref3.children;
+  var cfg = {
+    green: {
+      bg: "#F0F7F4",
+      border: C.green
+    },
+    gold: {
+      bg: "#FFF8EC",
+      border: C.gold
+    },
+    red: {
+      bg: "#FDF0EF",
+      border: C.red
+    },
+    navy: {
+      bg: "#EEF1F7",
+      border: C.navy
+    }
+  };
+  var s = cfg[type] || cfg.navy;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: s.bg,
+      border: "1px solid ".concat(s.border),
+      borderLeft: "5px solid ".concat(s.border),
+      borderRadius: 8,
+      padding: "14px 18px",
+      marginBottom: 16,
+      fontSize: 13,
+      color: C.navy,
+      lineHeight: 1.7
+    }
+  }, children);
 }
-
-function RevTooltip({active,payload,label}){
-  if(!active||!payload?.length) return null;
-  return <div style={{background:C.navy,color:C.white,padding:"10px 14px",borderRadius:6,fontSize:12}}>
-    <div style={{fontWeight:700,marginBottom:4}}>{label}</div>
-    {payload.map((p,i)=><div key={i} style={{display:"flex",gap:8,alignItems:"center"}}>
-      <span style={{width:8,height:8,borderRadius:2,background:p.fill||p.color,display:"inline-block"}}/>
-      <span style={{color:"#BCC5DA"}}>{p.name}:</span>
-      <span style={{fontWeight:700}}>{typeof p.value==="number"&&p.value>100?fmt$(p.value):p.value}</span>
-    </div>)}
-  </div>;
+function RevTooltip(_ref4) {
+  var active = _ref4.active,
+    payload = _ref4.payload,
+    label = _ref4.label;
+  if (!active || !(payload !== null && payload !== void 0 && payload.length)) return null;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.navy,
+      color: C.white,
+      padding: "10px 14px",
+      borderRadius: 6,
+      fontSize: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      marginBottom: 4
+    }
+  }, label), payload.map(function (p, i) {
+    return /*#__PURE__*/React.createElement("div", {
+      key: i,
+      style: {
+        display: "flex",
+        gap: 8,
+        alignItems: "center"
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        width: 8,
+        height: 8,
+        borderRadius: 2,
+        background: p.fill || p.color,
+        display: "inline-block"
+      }
+    }), /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: "#BCC5DA"
+      }
+    }, p.name, ":"), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontWeight: 700
+      }
+    }, typeof p.value === "number" && p.value > 100 ? fmt$(p.value) : p.value));
+  }));
 }
-
-const TABS=["Overview","GBP Deep Dive","Digital Attribution","Lead Sources","Reconciliation"];
-
-function App(){
-  const [tab,setTab]=useState(0);
-  const [reconFilter,setReconFilter]=useState("All");
-  const [srcFilter,setSrcFilter]=useState("All");
-
-  const filteredRecon=useMemo(()=>{
-    let d=reconData;
-    if(reconFilter!=="All") d=d.filter(r=>r.match_type===reconFilter);
-    if(srcFilter!=="All") d=d.filter(r=>r.crm_source===srcFilter);
+var TABS = ["Overview", "GBP Deep Dive", "Digital Attribution", "Lead Sources", "Reconciliation"];
+function App() {
+  var _useState = useState(0),
+    _useState2 = _slicedToArray(_useState, 2),
+    tab = _useState2[0],
+    setTab = _useState2[1];
+  var _useState3 = useState("All"),
+    _useState4 = _slicedToArray(_useState3, 2),
+    reconFilter = _useState4[0],
+    setReconFilter = _useState4[1];
+  var _useState5 = useState("All"),
+    _useState6 = _slicedToArray(_useState5, 2),
+    srcFilter = _useState6[0],
+    setSrcFilter = _useState6[1];
+  var filteredRecon = useMemo(function () {
+    var d = reconData;
+    if (reconFilter !== "All") d = d.filter(function (r) {
+      return r.match_type === reconFilter;
+    });
+    if (srcFilter !== "All") d = d.filter(function (r) {
+      return r.crm_source === srcFilter;
+    });
     return d;
-  },[reconFilter,srcFilter]);
-
-  const pestyDig25=digitalSources.reduce((a,r)=>a+r.rev2025,0);
-  const pestyDig26=digitalSources.reduce((a,r)=>a+r.rev2026,0);
-  const digLift=pestyDig26-pestyDig25;
-  const confirmedRevenue=reconData.filter(r=>r.match_type==="Phone Match").reduce((a,r)=>a+r.arv,0);
-  const likelyRevenue=reconData.filter(r=>r.match_type==="Source Match").reduce((a,r)=>a+r.arv,0);
-
-  return <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:C.light,minHeight:"100vh",paddingBottom:48}}>
-    <div style={{background:C.navy,padding:"22px 28px 18px",borderBottom:`4px solid ${C.red}`}}>
-      <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.14em",color:C.gold,textTransform:"uppercase",marginBottom:5}}>Pfitzer Pest Control × Pesty Marketing</div>
-      <div style={{fontSize:22,fontWeight:800,color:C.white,lineHeight:1.2}}>Revenue &amp; Lead Attribution Report</div>
-      <div style={{fontSize:12,color:"#8899BB",marginTop:5}}>Revenue: Jan 1 – Jun 12, 2025 &amp; 2026 &nbsp;|&nbsp; CallRail: Jan 1 – Jun 15, 2026</div>
-    </div>
-
-    <div style={{background:C.white,borderBottom:`1px solid ${C.border}`,padding:"0 28px",display:"flex",gap:0,overflowX:"auto"}}>
-      {TABS.map((t,i)=><button key={t} onClick={()=>setTab(i)} style={{padding:"13px 16px",border:"none",borderBottom:tab===i?`3px solid ${C.red}`:"3px solid transparent",background:"none",fontSize:13,whiteSpace:"nowrap",fontWeight:tab===i?700:500,color:tab===i?C.red:C.muted}}>{t}</button>)}
-    </div>
-
-    <div style={{padding:"24px 28px"}}>
-
-      {tab===0&&<div>
-        <SectionHead eyebrow="Year-over-Year Summary" title="2026 is outperforming 2025 by every meaningful metric."/>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:24}}>
-          <KPI label="New Customers 2025" value="195" accent={C.muted}/>
-          <KPI label="New Customers 2026" value="382" sub="▲ 96% YoY" accent={C.green} big/>
-          <KPI label="Total Revenue 2025" value={fmt$(92940)} accent={C.muted}/>
-          <KPI label="Total Revenue 2026" value={fmt$(129638)} sub="▲ $36,698 YoY" accent={C.green} big/>
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,marginBottom:24}}>
-          <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:8,padding:18}}>
-            <div style={{fontWeight:700,color:C.navy,marginBottom:14,fontSize:13}}>New Customers — 2025 vs 2026</div>
-            <ResponsiveContainer width="100%" height={190}>
-              <BarChart data={revenueOverview}>
-                <CartesianGrid strokeDasharray="3 3" stroke={C.border}/>
-                <XAxis dataKey="year" tick={{fontSize:12,fill:C.muted}}/>
-                <YAxis tick={{fontSize:11,fill:C.muted}}/>
-                <Tooltip formatter={v=>[v+" customers"]}/>
-                <Bar dataKey="customers" radius={[4,4,0,0]}><Cell fill={C.muted}/><Cell fill={C.green}/></Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:8,padding:18}}>
-            <div style={{fontWeight:700,color:C.navy,marginBottom:14,fontSize:13}}>Annual Recurring Revenue — 2025 vs 2026</div>
-            <ResponsiveContainer width="100%" height={190}>
-              <BarChart data={revenueOverview}>
-                <CartesianGrid strokeDasharray="3 3" stroke={C.border}/>
-                <XAxis dataKey="year" tick={{fontSize:12,fill:C.muted}}/>
-                <YAxis tickFormatter={v=>`$${(v/1000).toFixed(0)}k`} tick={{fontSize:11,fill:C.muted}}/>
-                <Tooltip content={<RevTooltip/>}/>
-                <Bar dataKey="revenue" name="Revenue" radius={[4,4,0,0]}><Cell fill={C.muted}/><Cell fill={C.navy}/></Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-        <Callout type="green">Pesty onboarded in January 2026. The three digital channels Pesty manages — Google Search, Website, and Google LSAs — produced <strong>{fmt$(pestyDig25)}</strong> in Jan–Jun 2025 before Pesty's involvement. In the same window under Pesty management, those same channels produced <strong>{fmt$(pestyDig26)}</strong> — an increase of <strong>{fmt$(digLift)} (+{Math.round(digLift/pestyDig25*100)}%)</strong> over the prior-year baseline.</Callout>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
-          <KPI label="Total Calls Tracked (2026)" value="1,500" accent={C.navy}/>
-          <KPI label="First-Time Callers" value="1,135" sub="75.7% of all calls" accent={C.gold}/>
-          <KPI label="Qualified Leads" value="173" sub="From Pesty channels" accent={C.green} big/>
-          <KPI label="GBP Qual. Rate Post-Opt." value="10.1%" sub="▲ from 5.2% pre-optimization" accent={C.red} big/>
-        </div>
-      </div>}
-
-      {tab===1&&<div>
-        <SectionHead eyebrow="Google Business Profile" title="GBP optimization on Apr 9 doubled the qualified lead rate."/>
-        <Callout type="navy"><strong>How GBP calls actually work:</strong> When a potential customer searches "pest control near me" on Google Maps or Google Search, Pfitzer's Google Business Profile listing is what appears. <strong>Pesty controls the visibility:</strong> the categories, keywords, service descriptions, photos, and UTM links that determine whether Pfitzer shows up and how high it ranks. <strong>Pfitzer's team controls the close:</strong> picking up the call and converting it. Both contributions matter — but the call wouldn't happen without the listing being optimized to appear.</Callout>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:24}}>
-          <KPI label="GBP Calls Before Apr 9" value="631" sub="5.2% qual. rate" accent={C.muted}/>
-          <KPI label="GBP Calls After Apr 9" value="685" sub="10.1% qual. rate" accent={C.green} big/>
-          <KPI label="Qual. Leads Before" value="33" accent={C.muted}/>
-          <KPI label="Qual. Leads After" value="69" sub="▲ 109% improvement" accent={C.red} big/>
-        </div>
-        <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:8,padding:18,marginBottom:20}}>
-          <div style={{fontWeight:700,color:C.navy,marginBottom:14,fontSize:13}}>GBP Qualified Lead Rate — Before vs After Apr 9 Optimization</div>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={gbpBeforeAfter}>
-              <CartesianGrid strokeDasharray="3 3" stroke={C.border}/>
-              <XAxis dataKey="period" tick={{fontSize:12,fill:C.muted}}/>
-              <YAxis yAxisId="left" tick={{fontSize:11,fill:C.muted}}/>
-              <YAxis yAxisId="right" orientation="right" tickFormatter={v=>`${v}%`} tick={{fontSize:11,fill:C.muted}}/>
-              <Tooltip/>
-              <Legend/>
-              <Bar yAxisId="left" dataKey="total" name="Total GBP Calls" fill={C.muted} radius={[4,4,0,0]}><Cell fill="#9BAAC4"/><Cell fill={C.navy}/></Bar>
-              <Bar yAxisId="left" dataKey="qualified" name="Qualified Leads" fill={C.red} radius={[4,4,0,0]}><Cell fill="#E8897E"/><Cell fill={C.red}/></Bar>
-              <Line yAxisId="right" type="monotone" dataKey="rate" name="Qual. Rate %" stroke={C.gold} strokeWidth={2} dot={{r:5,fill:C.gold}}/>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:8,padding:18,marginBottom:20}}>
-          <div style={{fontWeight:700,color:C.navy,marginBottom:4,fontSize:13}}>Monthly GBP Calls &amp; Qualified Leads — Jan–Jun 2026</div>
-          <div style={{fontSize:11,color:C.muted,marginBottom:14}}>Tracking data starts late Feb. March spike reflects GBP tracking going live across all markets simultaneously.</div>
-          <ResponsiveContainer width="100%" height={230}>
-            <BarChart data={monthlyGBP}>
-              <CartesianGrid strokeDasharray="3 3" stroke={C.border}/>
-              <XAxis dataKey="month" tick={{fontSize:12,fill:C.muted}}/>
-              <YAxis yAxisId="left" tick={{fontSize:11,fill:C.muted}}/>
-              <YAxis yAxisId="right" orientation="right" tickFormatter={v=>`${v}%`} tick={{fontSize:11,fill:C.muted}}/>
-              <Tooltip/>
-              <Legend/>
-              <ReferenceLine yAxisId="left" x="Apr" stroke={C.red} strokeDasharray="4 3" label={{value:"Apr 9: Optimization",position:"top",fontSize:10,fill:C.red}}/>
-              <Bar yAxisId="left" dataKey="total" name="Total GBP Calls" fill="#C5CDE0" radius={[3,3,0,0]}/>
-              <Bar yAxisId="left" dataKey="qualified" name="Qualified Leads" fill={C.navy} radius={[3,3,0,0]}/>
-              <Line yAxisId="right" type="monotone" dataKey="qualRate" name="Qual. Rate %" stroke={C.gold} strokeWidth={2} dot={{r:4,fill:C.gold}}/>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        <Callout type="green"><strong>What changed on April 9:</strong> Pesty completed a full GBP optimization pass across all 6 locations — updating service categories, rewriting business descriptions with local keywords, adding service area details, refreshing photos, and verifying UTM-tagged website links. The qualified lead rate went from 5.2% to 10.1% — a 94% improvement in lead quality from the same channel.</Callout>
-        <Callout type="gold"><strong>A note on March volume:</strong> The high call volume in March (587 GBP calls) reflects tracking numbers going live across markets simultaneously. The low qualification rate (4.4%) that month is expected — early tracking captures a broader mix including existing customers and informational inquiries.</Callout>
-      </div>}
-
-      {tab===2&&<div>
-        <SectionHead eyebrow="Digital Channel Performance" title="Before Pesty vs. with Pesty — same channels, measurably different results."/>
-        <Callout type="navy"><strong>How to read this comparison:</strong> Pesty began managing Pfitzer's digital channels in January 2026. The 2025 figures show what Google Search, Website, and LSA produced <em>before Pesty's involvement</em> — they are a baseline, not a Pesty result. The 2026 figures reflect performance under Pesty management. The difference is the most direct measure of Pesty's impact.</Callout>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:24}}>
-          <KPI label="Digital Revenue — Before Pesty (2025)" value={fmt$(pestyDig25)} sub="Google Search + Website + LSA" accent={C.muted}/>
-          <KPI label="Digital Revenue — With Pesty (2026)" value={fmt$(pestyDig26)} sub="Same channels, first year with Pesty" accent={C.green} big/>
-          <KPI label="Increase on These Channels" value={`+${fmt$(digLift)}`} sub={`+${Math.round(digLift/pestyDig25*100)}% over prior-year baseline`} accent={C.red} big/>
-        </div>
-        <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:8,padding:18,marginBottom:20}}>
-          <div style={{fontWeight:700,color:C.navy,marginBottom:4,fontSize:13}}>Revenue by Channel — Jan–Jun 2025 (Pre-Pesty) vs Jan–Jun 2026 (With Pesty)</div>
-          <div style={{fontSize:11,color:C.muted,marginBottom:14}}>Same three channels, same time window. Pesty onboarded January 2026.</div>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={digitalSources} barCategoryGap="30%" barGap={4}>
-              <CartesianGrid strokeDasharray="3 3" stroke={C.border}/>
-              <XAxis dataKey="source" tick={{fontSize:12,fill:C.muted}}/>
-              <YAxis tickFormatter={v=>`$${(v/1000).toFixed(0)}k`} tick={{fontSize:11,fill:C.muted}}/>
-              <Tooltip content={<RevTooltip/>}/>
-              <Legend/>
-              <Bar dataKey="rev2025" name="2025 — Pre-Pesty Baseline" fill="#9BAAC4" radius={[4,4,0,0]}/>
-              <Bar dataKey="rev2026" name="2026 — With Pesty" fill={C.navy} radius={[4,4,0,0]}/>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:8,overflow:"hidden"}}>
-          <table style={{fontSize:13}}>
-            <thead><tr style={{background:C.navy}}>
-              {["Channel","Pre-Pesty Cust.","With Pesty Cust.","Δ Cust.","Pre-Pesty Rev. (2025)","With Pesty Rev. (2026)","Change"].map(h=><th key={h} style={{padding:"10px 12px",color:C.white,fontWeight:700,textAlign:h==="Channel"?"left":"right",fontSize:11,whiteSpace:"nowrap"}}>{h}</th>)}
-            </tr></thead>
-            <tbody>
-              {digitalSources.map((row,i)=>{
-                const g=((row.rev2026-row.rev2025)/row.rev2025*100).toFixed(1);
-                return <tr key={row.source} style={{background:i%2===0?C.white:C.light}}>
-                  <td style={{padding:"10px 12px",fontWeight:600,color:C.navy}}>{row.source}</td>
-                  <td style={{padding:"10px 12px",textAlign:"right",color:C.muted}}>{row.c25}</td>
-                  <td style={{padding:"10px 12px",textAlign:"right",fontWeight:700}}>{row.c26}</td>
-                  <td style={{padding:"10px 12px",textAlign:"right",color:C.green,fontWeight:700}}>+{row.c26-row.c25}</td>
-                  <td style={{padding:"10px 12px",textAlign:"right",color:C.muted}}>{fmt$(row.rev2025)}</td>
-                  <td style={{padding:"10px 12px",textAlign:"right",fontWeight:700}}>{fmt$(row.rev2026)}</td>
-                  <td style={{padding:"10px 12px",textAlign:"right",fontWeight:700,color:parseFloat(g)>=0?C.green:C.red}}>{parseFloat(g)>=0?"+":""}{g}%</td>
-                </tr>;
-              })}
-              <tr style={{background:"#EEF2FF",borderTop:`2px solid ${C.navy}`}}>
-                <td style={{padding:"12px",fontWeight:800,color:C.navy}}>TOTAL</td>
-                <td style={{padding:"12px",textAlign:"right",fontWeight:700,color:C.muted}}>{digitalSources.reduce((a,r)=>a+r.c25,0)}</td>
-                <td style={{padding:"12px",textAlign:"right",fontWeight:700}}>{digitalSources.reduce((a,r)=>a+r.c26,0)}</td>
-                <td style={{padding:"12px",textAlign:"right",fontWeight:700,color:C.green}}>+{digitalSources.reduce((a,r)=>a+(r.c26-r.c25),0)}</td>
-                <td style={{padding:"12px",textAlign:"right",fontWeight:700,color:C.muted}}>{fmt$(pestyDig25)}</td>
-                <td style={{padding:"12px",textAlign:"right",fontWeight:800,color:C.navy}}>{fmt$(pestyDig26)}</td>
-                <td style={{padding:"12px",textAlign:"right",fontWeight:800,color:C.green}}>+{Math.round(digLift/pestyDig25*100)}%</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div style={{marginTop:12,fontSize:11,color:C.muted}}>Note: LSA revenue is slightly down year-over-year, reflecting verification challenges in early 2026 that are documented and actively being resolved. Google Search and Website more than offset this.</div>
-      </div>}
-
-      {tab===3&&<div>
-        <SectionHead eyebrow="All Lead Sources" title="Full year-over-year breakdown by customer source."/>
-        <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:8,overflow:"hidden",marginBottom:16}}>
-          <table style={{fontSize:13}}>
-            <thead><tr style={{background:C.navy}}>
-              {["Lead Source","2025 Cust.","2025 Revenue","2026 Cust.","2026 Revenue","Rev Change","% Chg"].map(h=><th key={h} style={{padding:"10px 14px",color:C.white,fontWeight:700,textAlign:h==="Lead Source"?"left":"right",fontSize:12}}>{h}</th>)}
-            </tr></thead>
-            <tbody>
-              {allSources.map((row,i)=>{
-                const delta=row.r26-row.r25;
-                const pct=((delta/row.r25)*100).toFixed(1);
-                const isD=["Google Search","Website","Google LSA's"].includes(row.source);
-                return <tr key={row.source} style={{background:i%2===0?C.white:C.light}}>
-                  <td style={{padding:"10px 14px",fontWeight:isD?700:500,color:C.navy}}>
-                    {isD&&<span style={{display:"inline-block",width:7,height:7,borderRadius:"50%",background:C.red,marginRight:7,verticalAlign:"middle"}}/>}
-                    {row.source}
-                  </td>
-                  <td style={{padding:"10px 14px",textAlign:"right",color:C.muted}}>{row.c25}</td>
-                  <td style={{padding:"10px 14px",textAlign:"right",color:C.muted}}>{fmt$(row.r25)}</td>
-                  <td style={{padding:"10px 14px",textAlign:"right",fontWeight:700}}>{row.c26}</td>
-                  <td style={{padding:"10px 14px",textAlign:"right",fontWeight:700}}>{fmt$(row.r26)}</td>
-                  <td style={{padding:"10px 14px",textAlign:"right",fontWeight:700,color:delta>=0?C.green:C.red}}>{delta>=0?"+":""}{fmt$(delta)}</td>
-                  <td style={{padding:"10px 14px",textAlign:"right",fontWeight:700,color:parseFloat(pct)>=0?C.green:C.red}}>{parseFloat(pct)>=0?"+":""}{pct}%</td>
-                </tr>;
-              })}
-            </tbody>
-          </table>
-          <div style={{padding:"10px 14px",background:C.light,borderTop:`1px solid ${C.border}`,fontSize:11,color:C.muted}}>
-            <span style={{display:"inline-block",width:7,height:7,borderRadius:"50%",background:C.red,marginRight:6}}/>Red dot = Pesty-managed digital channel
-          </div>
-        </div>
-        <Callout type="gold"><strong>Personal Contact Leads dropped 80%</strong> ($9,436 → $1,843). This reflects a reduction in Pfitzer's own outbound sales activity, not a marketing performance issue. Pesty-managed digital channels added $25,133 in net new revenue over the same period, more than offsetting the decline.</Callout>
-      </div>}
-
-      {tab===4&&<div>
-        <SectionHead eyebrow="CRM + CallRail Cross-Reference" title="Pfitzer customers traced back to Pesty-managed digital leads."/>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:20}}>
-          <KPI label="Digital CRM Customers Reviewed" value={reconData.length} accent={C.navy}/>
-          <KPI label="Phone-Confirmed Matches" value={reconData.filter(r=>r.match_type==="Phone Match").length} sub={`${fmt$(confirmedRevenue)} ARV`} accent={C.green} big/>
-          <KPI label="Source-Confirmed Matches" value={reconData.filter(r=>r.match_type==="Source Match").length} sub={`${fmt$(likelyRevenue)} ARV`} accent={C.teal}/>
-          <KPI label="Total Attributable ARV" value={fmt$(confirmedRevenue+likelyRevenue)} sub="Pesty digital channels" accent={C.red} big/>
-        </div>
-        <Callout type="navy"><strong>How to read this table:</strong> "Phone Match" means the customer's phone number in Pfitzer's CRM appears in a CallRail qualified lead record — a direct, verifiable link between a Pesty-tracked call and a closed customer. "Source Match" means the CRM lead source aligns with a Pesty-managed channel but phone numbers weren't in the CallRail window. CallRail only tracks marketing-sourced calls; some customers may have called a direct line not covered by a tracking number.</Callout>
-        <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>
-          <div style={{display:"flex",gap:6,alignItems:"center"}}>
-            <span style={{fontSize:12,fontWeight:600,color:C.muted}}>Match type:</span>
-            {["All","Phone Match","Source Match"].map(f=><button key={f} onClick={()=>setReconFilter(f)} style={{padding:"5px 12px",border:`1px solid ${reconFilter===f?C.navy:C.border}`,borderRadius:20,background:reconFilter===f?C.navy:C.white,color:reconFilter===f?C.white:C.muted,fontSize:12,fontWeight:reconFilter===f?700:400}}>{f}</button>)}
-          </div>
-          <div style={{display:"flex",gap:6,alignItems:"center"}}>
-            <span style={{fontSize:12,fontWeight:600,color:C.muted}}>Source:</span>
-            {["All","Google Search","Website","Google LSA's"].map(f=><button key={f} onClick={()=>setSrcFilter(f)} style={{padding:"5px 12px",border:`1px solid ${srcFilter===f?C.red:C.border}`,borderRadius:20,background:srcFilter===f?C.red:C.white,color:srcFilter===f?C.white:C.muted,fontSize:12,fontWeight:srcFilter===f?700:400}}>{f}</button>)}
-          </div>
-        </div>
-        <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:8,overflow:"auto",maxHeight:460}}>
-          <table style={{fontSize:12,minWidth:700}}>
-            <thead style={{position:"sticky",top:0,zIndex:1}}>
-              <tr style={{background:C.navy}}>
-                {["CID","Location","Sold Date","CRM Source","CallRail Source","ARV","Match Type","Status"].map(h=><th key={h} style={{padding:"9px 12px",color:C.white,fontWeight:700,textAlign:h==="ARV"?"right":"left",fontSize:11,whiteSpace:"nowrap"}}>{h}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRecon.map((row,i)=>{
-                const isConf=row.match_type==="Phone Match";
-                return <tr key={row.cid} style={{background:i%2===0?C.white:C.light}}>
-                  <td style={{padding:"8px 12px",color:C.muted,fontFamily:"monospace"}}>{row.cid}</td>
-                  <td style={{padding:"8px 12px",fontWeight:500}}>{row.location}</td>
-                  <td style={{padding:"8px 12px",color:C.muted,whiteSpace:"nowrap"}}>{row.sold}</td>
-                  <td style={{padding:"8px 12px"}}>{row.crm_source}</td>
-                  <td style={{padding:"8px 12px",color:row.callrail_source==="GBP"?C.red:C.navy,fontWeight:row.callrail_source==="GBP"?700:400}}>{row.callrail_source==="GBP"?"GBP (Pesty-optimized)":row.callrail_source}</td>
-                  <td style={{padding:"8px 12px",textAlign:"right",fontWeight:700}}>{fmtD(row.arv)}</td>
-                  <td style={{padding:"8px 12px"}}><span style={{display:"inline-block",padding:"2px 9px",borderRadius:12,fontSize:11,fontWeight:700,background:isConf?"#E6F4EE":"#EEF1F7",color:isConf?C.green:C.navy}}>{row.match_type}</span></td>
-                  <td style={{padding:"8px 12px"}}><span style={{display:"inline-block",padding:"2px 9px",borderRadius:12,fontSize:11,fontWeight:700,background:isConf?"#E6F4EE":"#FFF8EC",color:isConf?C.green:C.gold}}>{isConf?"Confirmed":"Likely"}</span></td>
-                </tr>;
-              })}
-            </tbody>
-            <tfoot style={{position:"sticky",bottom:0}}>
-              <tr style={{background:"#EEF2FF",borderTop:`2px solid ${C.navy}`}}>
-                <td colSpan={5} style={{padding:"10px 12px",fontWeight:800,color:C.navy,fontSize:12}}>Showing {filteredRecon.length} of {reconData.length} records</td>
-                <td style={{padding:"10px 12px",textAlign:"right",fontWeight:800,color:C.navy,fontSize:12}}>{fmtD(filteredRecon.reduce((a,r)=>a+r.arv,0))}</td>
-                <td colSpan={2} style={{padding:"10px 12px",fontSize:11,color:C.muted}}>Total ARV in view</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-        <div style={{marginTop:14,fontSize:11,color:C.muted}}>ARV = Annual Recurring Value per Pfitzer CRM. Phone Match = customer phone verified in CallRail record. Source Match = CRM lead source aligns with Pesty-managed channel.</div>
-      </div>}
-
-    </div>
-
-    <div style={{margin:"0 28px",paddingTop:18,borderTop:`1px solid ${C.border}`,fontSize:11,color:C.muted}}>
-      Revenue data: Pfitzer CRM export, Jan 1–Jun 12, 2025 &amp; 2026 &nbsp;|&nbsp; Call data: CallRail export, Jan 1–Jun 15, 2026 &nbsp;|&nbsp; Prepared by Pesty Marketing
-    </div>
-  </div>;
+  }, [reconFilter, srcFilter]);
+  var pestyDig25 = digitalSources.reduce(function (a, r) {
+    return a + r.rev2025;
+  }, 0);
+  var pestyDig26 = digitalSources.reduce(function (a, r) {
+    return a + r.rev2026;
+  }, 0);
+  var digLift = pestyDig26 - pestyDig25;
+  var confirmedRevenue = reconData.filter(function (r) {
+    return r.match_type === "Phone Match";
+  }).reduce(function (a, r) {
+    return a + r.arv;
+  }, 0);
+  var likelyRevenue = reconData.filter(function (r) {
+    return r.match_type === "Source Match";
+  }).reduce(function (a, r) {
+    return a + r.arv;
+  }, 0);
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",
+      background: C.light,
+      minHeight: "100vh",
+      paddingBottom: 48
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.navy,
+      padding: "22px 28px 18px",
+      borderBottom: "4px solid ".concat(C.red)
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      fontWeight: 700,
+      letterSpacing: "0.14em",
+      color: C.gold,
+      textTransform: "uppercase",
+      marginBottom: 5
+    }
+  }, "Pfitzer Pest Control \xD7 Pesty Marketing"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 22,
+      fontWeight: 800,
+      color: C.white,
+      lineHeight: 1.2
+    }
+  }, "Revenue & Lead Attribution Report"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "#8899BB",
+      marginTop: 5
+    }
+  }, "Revenue: Jan 1 \u2013 Jun 12, 2025 & 2026 \xA0|\xA0 CallRail: Jan 1 \u2013 Jun 15, 2026")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.white,
+      borderBottom: "1px solid ".concat(C.border),
+      padding: "0 28px",
+      display: "flex",
+      gap: 0,
+      overflowX: "auto"
+    }
+  }, TABS.map(function (t, i) {
+    return /*#__PURE__*/React.createElement("button", {
+      key: t,
+      onClick: function onClick() {
+        return setTab(i);
+      },
+      style: {
+        padding: "13px 16px",
+        border: "none",
+        borderBottom: tab === i ? "3px solid ".concat(C.red) : "3px solid transparent",
+        background: "none",
+        fontSize: 13,
+        whiteSpace: "nowrap",
+        fontWeight: tab === i ? 700 : 500,
+        color: tab === i ? C.red : C.muted
+      }
+    }, t);
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "24px 28px"
+    }
+  }, tab === 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(SectionHead, {
+    eyebrow: "Year-over-Year Summary",
+    title: "2026 is outperforming 2025 by every meaningful metric."
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(4,1fr)",
+      gap: 14,
+      marginBottom: 24
+    }
+  }, /*#__PURE__*/React.createElement(KPI, {
+    label: "New Customers 2025",
+    value: "195",
+    accent: C.muted
+  }), /*#__PURE__*/React.createElement(KPI, {
+    label: "New Customers 2026",
+    value: "382",
+    sub: "\u25B2 96% YoY",
+    accent: C.green,
+    big: true
+  }), /*#__PURE__*/React.createElement(KPI, {
+    label: "Total Revenue 2025",
+    value: fmt$(92940),
+    accent: C.muted
+  }), /*#__PURE__*/React.createElement(KPI, {
+    label: "Total Revenue 2026",
+    value: fmt$(129638),
+    sub: "\u25B2 $36,698 YoY",
+    accent: C.green,
+    big: true
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 18,
+      marginBottom: 24
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.white,
+      border: "1px solid ".concat(C.border),
+      borderRadius: 8,
+      padding: 18
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      color: C.navy,
+      marginBottom: 14,
+      fontSize: 13
+    }
+  }, "New Customers \u2014 2025 vs 2026"), /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 190
+  }, /*#__PURE__*/React.createElement(BarChart, {
+    data: revenueOverview
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "3 3",
+    stroke: C.border
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "year",
+    tick: {
+      fontSize: 12,
+      fill: C.muted
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    tick: {
+      fontSize: 11,
+      fill: C.muted
+    }
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    formatter: function formatter(v) {
+      return [v + " customers"];
+    }
+  }), /*#__PURE__*/React.createElement(Bar, {
+    dataKey: "customers",
+    radius: [4, 4, 0, 0]
+  }, /*#__PURE__*/React.createElement(Cell, {
+    fill: C.muted
+  }), /*#__PURE__*/React.createElement(Cell, {
+    fill: C.green
+  }))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.white,
+      border: "1px solid ".concat(C.border),
+      borderRadius: 8,
+      padding: 18
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      color: C.navy,
+      marginBottom: 14,
+      fontSize: 13
+    }
+  }, "Annual Recurring Revenue \u2014 2025 vs 2026"), /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 190
+  }, /*#__PURE__*/React.createElement(BarChart, {
+    data: revenueOverview
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "3 3",
+    stroke: C.border
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "year",
+    tick: {
+      fontSize: 12,
+      fill: C.muted
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    tickFormatter: function tickFormatter(v) {
+      return "$".concat((v / 1000).toFixed(0), "k");
+    },
+    tick: {
+      fontSize: 11,
+      fill: C.muted
+    }
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(RevTooltip, null)
+  }), /*#__PURE__*/React.createElement(Bar, {
+    dataKey: "revenue",
+    name: "Revenue",
+    radius: [4, 4, 0, 0]
+  }, /*#__PURE__*/React.createElement(Cell, {
+    fill: C.muted
+  }), /*#__PURE__*/React.createElement(Cell, {
+    fill: C.navy
+  })))))), /*#__PURE__*/React.createElement(Callout, {
+    type: "green"
+  }, "Pesty onboarded in January 2026. The three digital channels Pesty manages \u2014 Google Search, Website, and Google LSAs \u2014 produced ", /*#__PURE__*/React.createElement("strong", null, fmt$(pestyDig25)), " in Jan\u2013Jun 2025 before Pesty's involvement. In the same window under Pesty management, those same channels produced ", /*#__PURE__*/React.createElement("strong", null, fmt$(pestyDig26)), " \u2014 an increase of ", /*#__PURE__*/React.createElement("strong", null, fmt$(digLift), " (+", Math.round(digLift / pestyDig25 * 100), "%)"), " over the prior-year baseline."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(4,1fr)",
+      gap: 14
+    }
+  }, /*#__PURE__*/React.createElement(KPI, {
+    label: "Total Calls Tracked (2026)",
+    value: "1,500",
+    accent: C.navy
+  }), /*#__PURE__*/React.createElement(KPI, {
+    label: "First-Time Callers",
+    value: "1,135",
+    sub: "75.7% of all calls",
+    accent: C.gold
+  }), /*#__PURE__*/React.createElement(KPI, {
+    label: "Qualified Leads",
+    value: "173",
+    sub: "From Pesty channels",
+    accent: C.green,
+    big: true
+  }), /*#__PURE__*/React.createElement(KPI, {
+    label: "GBP Qual. Rate Post-Opt.",
+    value: "10.1%",
+    sub: "\u25B2 from 5.2% pre-optimization",
+    accent: C.red,
+    big: true
+  }))), tab === 1 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(SectionHead, {
+    eyebrow: "Google Business Profile",
+    title: "GBP optimization on Apr 9 doubled the qualified lead rate."
+  }), /*#__PURE__*/React.createElement(Callout, {
+    type: "navy"
+  }, /*#__PURE__*/React.createElement("strong", null, "How GBP calls actually work:"), " When a potential customer searches \"pest control near me\" on Google Maps or Google Search, Pfitzer's Google Business Profile listing is what appears. ", /*#__PURE__*/React.createElement("strong", null, "Pesty controls the visibility:"), " the categories, keywords, service descriptions, photos, and UTM links that determine whether Pfitzer shows up and how high it ranks. ", /*#__PURE__*/React.createElement("strong", null, "Pfitzer's team controls the close:"), " picking up the call and converting it. Both contributions matter \u2014 but the call wouldn't happen without the listing being optimized to appear."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(4,1fr)",
+      gap: 14,
+      marginBottom: 24
+    }
+  }, /*#__PURE__*/React.createElement(KPI, {
+    label: "GBP Calls Before Apr 9",
+    value: "631",
+    sub: "5.2% qual. rate",
+    accent: C.muted
+  }), /*#__PURE__*/React.createElement(KPI, {
+    label: "GBP Calls After Apr 9",
+    value: "685",
+    sub: "10.1% qual. rate",
+    accent: C.green,
+    big: true
+  }), /*#__PURE__*/React.createElement(KPI, {
+    label: "Qual. Leads Before",
+    value: "33",
+    accent: C.muted
+  }), /*#__PURE__*/React.createElement(KPI, {
+    label: "Qual. Leads After",
+    value: "69",
+    sub: "\u25B2 109% improvement",
+    accent: C.red,
+    big: true
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.white,
+      border: "1px solid ".concat(C.border),
+      borderRadius: 8,
+      padding: 18,
+      marginBottom: 20
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      color: C.navy,
+      marginBottom: 14,
+      fontSize: 13
+    }
+  }, "GBP Qualified Lead Rate \u2014 Before vs After Apr 9 Optimization"), /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 220
+  }, /*#__PURE__*/React.createElement(BarChart, {
+    data: gbpBeforeAfter
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "3 3",
+    stroke: C.border
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "period",
+    tick: {
+      fontSize: 12,
+      fill: C.muted
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    yAxisId: "left",
+    tick: {
+      fontSize: 11,
+      fill: C.muted
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    yAxisId: "right",
+    orientation: "right",
+    tickFormatter: function tickFormatter(v) {
+      return "".concat(v, "%");
+    },
+    tick: {
+      fontSize: 11,
+      fill: C.muted
+    }
+  }), /*#__PURE__*/React.createElement(Tooltip, null), /*#__PURE__*/React.createElement(Legend, null), /*#__PURE__*/React.createElement(Bar, {
+    yAxisId: "left",
+    dataKey: "total",
+    name: "Total GBP Calls",
+    fill: C.muted,
+    radius: [4, 4, 0, 0]
+  }, /*#__PURE__*/React.createElement(Cell, {
+    fill: "#9BAAC4"
+  }), /*#__PURE__*/React.createElement(Cell, {
+    fill: C.navy
+  })), /*#__PURE__*/React.createElement(Bar, {
+    yAxisId: "left",
+    dataKey: "qualified",
+    name: "Qualified Leads",
+    fill: C.red,
+    radius: [4, 4, 0, 0]
+  }, /*#__PURE__*/React.createElement(Cell, {
+    fill: "#E8897E"
+  }), /*#__PURE__*/React.createElement(Cell, {
+    fill: C.red
+  })), /*#__PURE__*/React.createElement(Line, {
+    yAxisId: "right",
+    type: "monotone",
+    dataKey: "rate",
+    name: "Qual. Rate %",
+    stroke: C.gold,
+    strokeWidth: 2,
+    dot: {
+      r: 5,
+      fill: C.gold
+    }
+  })))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.white,
+      border: "1px solid ".concat(C.border),
+      borderRadius: 8,
+      padding: 18,
+      marginBottom: 20
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      color: C.navy,
+      marginBottom: 4,
+      fontSize: 13
+    }
+  }, "Monthly GBP Calls & Qualified Leads \u2014 Jan\u2013Jun 2026"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted,
+      marginBottom: 14
+    }
+  }, "Tracking data starts late Feb. March spike reflects GBP tracking going live across all markets simultaneously."), /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 230
+  }, /*#__PURE__*/React.createElement(BarChart, {
+    data: monthlyGBP
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "3 3",
+    stroke: C.border
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "month",
+    tick: {
+      fontSize: 12,
+      fill: C.muted
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    yAxisId: "left",
+    tick: {
+      fontSize: 11,
+      fill: C.muted
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    yAxisId: "right",
+    orientation: "right",
+    tickFormatter: function tickFormatter(v) {
+      return "".concat(v, "%");
+    },
+    tick: {
+      fontSize: 11,
+      fill: C.muted
+    }
+  }), /*#__PURE__*/React.createElement(Tooltip, null), /*#__PURE__*/React.createElement(Legend, null), /*#__PURE__*/React.createElement(ReferenceLine, {
+    yAxisId: "left",
+    x: "Apr",
+    stroke: C.red,
+    strokeDasharray: "4 3",
+    label: {
+      value: "Apr 9: Optimization",
+      position: "top",
+      fontSize: 10,
+      fill: C.red
+    }
+  }), /*#__PURE__*/React.createElement(Bar, {
+    yAxisId: "left",
+    dataKey: "total",
+    name: "Total GBP Calls",
+    fill: "#C5CDE0",
+    radius: [3, 3, 0, 0]
+  }), /*#__PURE__*/React.createElement(Bar, {
+    yAxisId: "left",
+    dataKey: "qualified",
+    name: "Qualified Leads",
+    fill: C.navy,
+    radius: [3, 3, 0, 0]
+  }), /*#__PURE__*/React.createElement(Line, {
+    yAxisId: "right",
+    type: "monotone",
+    dataKey: "qualRate",
+    name: "Qual. Rate %",
+    stroke: C.gold,
+    strokeWidth: 2,
+    dot: {
+      r: 4,
+      fill: C.gold
+    }
+  })))), /*#__PURE__*/React.createElement(Callout, {
+    type: "green"
+  }, /*#__PURE__*/React.createElement("strong", null, "What changed on April 9:"), " Pesty completed a full GBP optimization pass across all 6 locations \u2014 updating service categories, rewriting business descriptions with local keywords, adding service area details, refreshing photos, and verifying UTM-tagged website links. The qualified lead rate went from 5.2% to 10.1% \u2014 a 94% improvement in lead quality from the same channel."), /*#__PURE__*/React.createElement(Callout, {
+    type: "gold"
+  }, /*#__PURE__*/React.createElement("strong", null, "A note on March volume:"), " The high call volume in March (587 GBP calls) reflects tracking numbers going live across markets simultaneously. The low qualification rate (4.4%) that month is expected \u2014 early tracking captures a broader mix including existing customers and informational inquiries.")), tab === 2 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(SectionHead, {
+    eyebrow: "Digital Channel Performance",
+    title: "Before Pesty vs. with Pesty \u2014 same channels, measurably different results."
+  }), /*#__PURE__*/React.createElement(Callout, {
+    type: "navy"
+  }, /*#__PURE__*/React.createElement("strong", null, "How to read this comparison:"), " Pesty began managing Pfitzer's digital channels in January 2026. The 2025 figures show what Google Search, Website, and LSA produced ", /*#__PURE__*/React.createElement("em", null, "before Pesty's involvement"), " \u2014 they are a baseline, not a Pesty result. The 2026 figures reflect performance under Pesty management. The difference is the most direct measure of Pesty's impact."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(3,1fr)",
+      gap: 14,
+      marginBottom: 24
+    }
+  }, /*#__PURE__*/React.createElement(KPI, {
+    label: "Digital Revenue \u2014 Before Pesty (2025)",
+    value: fmt$(pestyDig25),
+    sub: "Google Search + Website + LSA",
+    accent: C.muted
+  }), /*#__PURE__*/React.createElement(KPI, {
+    label: "Digital Revenue \u2014 With Pesty (2026)",
+    value: fmt$(pestyDig26),
+    sub: "Same channels, first year with Pesty",
+    accent: C.green,
+    big: true
+  }), /*#__PURE__*/React.createElement(KPI, {
+    label: "Increase on These Channels",
+    value: "+".concat(fmt$(digLift)),
+    sub: "+".concat(Math.round(digLift / pestyDig25 * 100), "% over prior-year baseline"),
+    accent: C.red,
+    big: true
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.white,
+      border: "1px solid ".concat(C.border),
+      borderRadius: 8,
+      padding: 18,
+      marginBottom: 20
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      color: C.navy,
+      marginBottom: 4,
+      fontSize: 13
+    }
+  }, "Revenue by Channel \u2014 Jan\u2013Jun 2025 (Pre-Pesty) vs Jan\u2013Jun 2026 (With Pesty)"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted,
+      marginBottom: 14
+    }
+  }, "Same three channels, same time window. Pesty onboarded January 2026."), /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 260
+  }, /*#__PURE__*/React.createElement(BarChart, {
+    data: digitalSources,
+    barCategoryGap: "30%",
+    barGap: 4
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "3 3",
+    stroke: C.border
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "source",
+    tick: {
+      fontSize: 12,
+      fill: C.muted
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    tickFormatter: function tickFormatter(v) {
+      return "$".concat((v / 1000).toFixed(0), "k");
+    },
+    tick: {
+      fontSize: 11,
+      fill: C.muted
+    }
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(RevTooltip, null)
+  }), /*#__PURE__*/React.createElement(Legend, null), /*#__PURE__*/React.createElement(Bar, {
+    dataKey: "rev2025",
+    name: "2025 \u2014 Pre-Pesty Baseline",
+    fill: "#9BAAC4",
+    radius: [4, 4, 0, 0]
+  }), /*#__PURE__*/React.createElement(Bar, {
+    dataKey: "rev2026",
+    name: "2026 \u2014 With Pesty",
+    fill: C.navy,
+    radius: [4, 4, 0, 0]
+  })))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.white,
+      border: "1px solid ".concat(C.border),
+      borderRadius: 8,
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    style: {
+      fontSize: 13
+    }
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+    style: {
+      background: C.navy
+    }
+  }, ["Channel", "Pre-Pesty Cust.", "With Pesty Cust.", "Δ Cust.", "Pre-Pesty Rev. (2025)", "With Pesty Rev. (2026)", "Change"].map(function (h) {
+    return /*#__PURE__*/React.createElement("th", {
+      key: h,
+      style: {
+        padding: "10px 12px",
+        color: C.white,
+        fontWeight: 700,
+        textAlign: h === "Channel" ? "left" : "right",
+        fontSize: 11,
+        whiteSpace: "nowrap"
+      }
+    }, h);
+  }))), /*#__PURE__*/React.createElement("tbody", null, digitalSources.map(function (row, i) {
+    var g = ((row.rev2026 - row.rev2025) / row.rev2025 * 100).toFixed(1);
+    return /*#__PURE__*/React.createElement("tr", {
+      key: row.source,
+      style: {
+        background: i % 2 === 0 ? C.white : C.light
+      }
+    }, /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "10px 12px",
+        fontWeight: 600,
+        color: C.navy
+      }
+    }, row.source), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "10px 12px",
+        textAlign: "right",
+        color: C.muted
+      }
+    }, row.c25), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "10px 12px",
+        textAlign: "right",
+        fontWeight: 700
+      }
+    }, row.c26), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "10px 12px",
+        textAlign: "right",
+        color: C.green,
+        fontWeight: 700
+      }
+    }, "+", row.c26 - row.c25), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "10px 12px",
+        textAlign: "right",
+        color: C.muted
+      }
+    }, fmt$(row.rev2025)), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "10px 12px",
+        textAlign: "right",
+        fontWeight: 700
+      }
+    }, fmt$(row.rev2026)), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "10px 12px",
+        textAlign: "right",
+        fontWeight: 700,
+        color: parseFloat(g) >= 0 ? C.green : C.red
+      }
+    }, parseFloat(g) >= 0 ? "+" : "", g, "%"));
+  }), /*#__PURE__*/React.createElement("tr", {
+    style: {
+      background: "#EEF2FF",
+      borderTop: "2px solid ".concat(C.navy)
+    }
+  }, /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: "12px",
+      fontWeight: 800,
+      color: C.navy
+    }
+  }, "TOTAL"), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: "12px",
+      textAlign: "right",
+      fontWeight: 700,
+      color: C.muted
+    }
+  }, digitalSources.reduce(function (a, r) {
+    return a + r.c25;
+  }, 0)), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: "12px",
+      textAlign: "right",
+      fontWeight: 700
+    }
+  }, digitalSources.reduce(function (a, r) {
+    return a + r.c26;
+  }, 0)), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: "12px",
+      textAlign: "right",
+      fontWeight: 700,
+      color: C.green
+    }
+  }, "+", digitalSources.reduce(function (a, r) {
+    return a + (r.c26 - r.c25);
+  }, 0)), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: "12px",
+      textAlign: "right",
+      fontWeight: 700,
+      color: C.muted
+    }
+  }, fmt$(pestyDig25)), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: "12px",
+      textAlign: "right",
+      fontWeight: 800,
+      color: C.navy
+    }
+  }, fmt$(pestyDig26)), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: "12px",
+      textAlign: "right",
+      fontWeight: 800,
+      color: C.green
+    }
+  }, "+", Math.round(digLift / pestyDig25 * 100), "%"))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 12,
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "Note: LSA revenue is slightly down year-over-year, reflecting verification challenges in early 2026 that are documented and actively being resolved. Google Search and Website more than offset this.")), tab === 3 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(SectionHead, {
+    eyebrow: "All Lead Sources",
+    title: "Full year-over-year breakdown by customer source."
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.white,
+      border: "1px solid ".concat(C.border),
+      borderRadius: 8,
+      overflow: "hidden",
+      marginBottom: 16
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    style: {
+      fontSize: 13
+    }
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+    style: {
+      background: C.navy
+    }
+  }, ["Lead Source", "2025 Cust.", "2025 Revenue", "2026 Cust.", "2026 Revenue", "Rev Change", "% Chg"].map(function (h) {
+    return /*#__PURE__*/React.createElement("th", {
+      key: h,
+      style: {
+        padding: "10px 14px",
+        color: C.white,
+        fontWeight: 700,
+        textAlign: h === "Lead Source" ? "left" : "right",
+        fontSize: 12
+      }
+    }, h);
+  }))), /*#__PURE__*/React.createElement("tbody", null, allSources.map(function (row, i) {
+    var delta = row.r26 - row.r25;
+    var pct = (delta / row.r25 * 100).toFixed(1);
+    var isD = ["Google Search", "Website", "Google LSA's"].includes(row.source);
+    return /*#__PURE__*/React.createElement("tr", {
+      key: row.source,
+      style: {
+        background: i % 2 === 0 ? C.white : C.light
+      }
+    }, /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "10px 14px",
+        fontWeight: isD ? 700 : 500,
+        color: C.navy
+      }
+    }, isD && /*#__PURE__*/React.createElement("span", {
+      style: {
+        display: "inline-block",
+        width: 7,
+        height: 7,
+        borderRadius: "50%",
+        background: C.red,
+        marginRight: 7,
+        verticalAlign: "middle"
+      }
+    }), row.source), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "10px 14px",
+        textAlign: "right",
+        color: C.muted
+      }
+    }, row.c25), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "10px 14px",
+        textAlign: "right",
+        color: C.muted
+      }
+    }, fmt$(row.r25)), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "10px 14px",
+        textAlign: "right",
+        fontWeight: 700
+      }
+    }, row.c26), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "10px 14px",
+        textAlign: "right",
+        fontWeight: 700
+      }
+    }, fmt$(row.r26)), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "10px 14px",
+        textAlign: "right",
+        fontWeight: 700,
+        color: delta >= 0 ? C.green : C.red
+      }
+    }, delta >= 0 ? "+" : "", fmt$(delta)), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "10px 14px",
+        textAlign: "right",
+        fontWeight: 700,
+        color: parseFloat(pct) >= 0 ? C.green : C.red
+      }
+    }, parseFloat(pct) >= 0 ? "+" : "", pct, "%"));
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "10px 14px",
+      background: C.light,
+      borderTop: "1px solid ".concat(C.border),
+      fontSize: 11,
+      color: C.muted
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: "inline-block",
+      width: 7,
+      height: 7,
+      borderRadius: "50%",
+      background: C.red,
+      marginRight: 6
+    }
+  }), "Red dot = Pesty-managed digital channel")), /*#__PURE__*/React.createElement(Callout, {
+    type: "gold"
+  }, /*#__PURE__*/React.createElement("strong", null, "Personal Contact Leads dropped 80%"), " ($9,436 \u2192 $1,843). This reflects a reduction in Pfitzer's own outbound sales activity, not a marketing performance issue. Pesty-managed digital channels added $25,133 in net new revenue over the same period, more than offsetting the decline.")), tab === 4 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(SectionHead, {
+    eyebrow: "CRM + CallRail Cross-Reference",
+    title: "Pfitzer customers traced back to Pesty-managed digital leads."
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(4,1fr)",
+      gap: 14,
+      marginBottom: 20
+    }
+  }, /*#__PURE__*/React.createElement(KPI, {
+    label: "Digital CRM Customers Reviewed",
+    value: reconData.length,
+    accent: C.navy
+  }), /*#__PURE__*/React.createElement(KPI, {
+    label: "Phone-Confirmed Matches",
+    value: reconData.filter(function (r) {
+      return r.match_type === "Phone Match";
+    }).length,
+    sub: "".concat(fmt$(confirmedRevenue), " ARV"),
+    accent: C.green,
+    big: true
+  }), /*#__PURE__*/React.createElement(KPI, {
+    label: "Source-Confirmed Matches",
+    value: reconData.filter(function (r) {
+      return r.match_type === "Source Match";
+    }).length,
+    sub: "".concat(fmt$(likelyRevenue), " ARV"),
+    accent: C.teal
+  }), /*#__PURE__*/React.createElement(KPI, {
+    label: "Total Attributable ARV",
+    value: fmt$(confirmedRevenue + likelyRevenue),
+    sub: "Pesty digital channels",
+    accent: C.red,
+    big: true
+  })), /*#__PURE__*/React.createElement(Callout, {
+    type: "navy"
+  }, /*#__PURE__*/React.createElement("strong", null, "How to read this table:"), " \"Phone Match\" means the customer's phone number in Pfitzer's CRM appears in a CallRail qualified lead record \u2014 a direct, verifiable link between a Pesty-tracked call and a closed customer. \"Source Match\" means the CRM lead source aligns with a Pesty-managed channel but phone numbers weren't in the CallRail window. CallRail only tracks marketing-sourced calls; some customers may have called a direct line not covered by a tracking number."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10,
+      marginBottom: 16,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 6,
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12,
+      fontWeight: 600,
+      color: C.muted
+    }
+  }, "Match type:"), ["All", "Phone Match", "Source Match"].map(function (f) {
+    return /*#__PURE__*/React.createElement("button", {
+      key: f,
+      onClick: function onClick() {
+        return setReconFilter(f);
+      },
+      style: {
+        padding: "5px 12px",
+        border: "1px solid ".concat(reconFilter === f ? C.navy : C.border),
+        borderRadius: 20,
+        background: reconFilter === f ? C.navy : C.white,
+        color: reconFilter === f ? C.white : C.muted,
+        fontSize: 12,
+        fontWeight: reconFilter === f ? 700 : 400
+      }
+    }, f);
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 6,
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12,
+      fontWeight: 600,
+      color: C.muted
+    }
+  }, "Source:"), ["All", "Google Search", "Website", "Google LSA's"].map(function (f) {
+    return /*#__PURE__*/React.createElement("button", {
+      key: f,
+      onClick: function onClick() {
+        return setSrcFilter(f);
+      },
+      style: {
+        padding: "5px 12px",
+        border: "1px solid ".concat(srcFilter === f ? C.red : C.border),
+        borderRadius: 20,
+        background: srcFilter === f ? C.red : C.white,
+        color: srcFilter === f ? C.white : C.muted,
+        fontSize: 12,
+        fontWeight: srcFilter === f ? 700 : 400
+      }
+    }, f);
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.white,
+      border: "1px solid ".concat(C.border),
+      borderRadius: 8,
+      overflow: "auto",
+      maxHeight: 460
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    style: {
+      fontSize: 12,
+      minWidth: 700
+    }
+  }, /*#__PURE__*/React.createElement("thead", {
+    style: {
+      position: "sticky",
+      top: 0,
+      zIndex: 1
+    }
+  }, /*#__PURE__*/React.createElement("tr", {
+    style: {
+      background: C.navy
+    }
+  }, ["CID", "Location", "Sold Date", "CRM Source", "CallRail Source", "ARV", "Match Type", "Status"].map(function (h) {
+    return /*#__PURE__*/React.createElement("th", {
+      key: h,
+      style: {
+        padding: "9px 12px",
+        color: C.white,
+        fontWeight: 700,
+        textAlign: h === "ARV" ? "right" : "left",
+        fontSize: 11,
+        whiteSpace: "nowrap"
+      }
+    }, h);
+  }))), /*#__PURE__*/React.createElement("tbody", null, filteredRecon.map(function (row, i) {
+    var isConf = row.match_type === "Phone Match";
+    return /*#__PURE__*/React.createElement("tr", {
+      key: row.cid,
+      style: {
+        background: i % 2 === 0 ? C.white : C.light
+      }
+    }, /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "8px 12px",
+        color: C.muted,
+        fontFamily: "monospace"
+      }
+    }, row.cid), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "8px 12px",
+        fontWeight: 500
+      }
+    }, row.location), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "8px 12px",
+        color: C.muted,
+        whiteSpace: "nowrap"
+      }
+    }, row.sold), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "8px 12px"
+      }
+    }, row.crm_source), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "8px 12px",
+        color: row.callrail_source === "GBP" ? C.red : C.navy,
+        fontWeight: row.callrail_source === "GBP" ? 700 : 400
+      }
+    }, row.callrail_source === "GBP" ? "GBP (Pesty-optimized)" : row.callrail_source), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "8px 12px",
+        textAlign: "right",
+        fontWeight: 700
+      }
+    }, fmtD(row.arv)), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "8px 12px"
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        display: "inline-block",
+        padding: "2px 9px",
+        borderRadius: 12,
+        fontSize: 11,
+        fontWeight: 700,
+        background: isConf ? "#E6F4EE" : "#EEF1F7",
+        color: isConf ? C.green : C.navy
+      }
+    }, row.match_type)), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "8px 12px"
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        display: "inline-block",
+        padding: "2px 9px",
+        borderRadius: 12,
+        fontSize: 11,
+        fontWeight: 700,
+        background: isConf ? "#E6F4EE" : "#FFF8EC",
+        color: isConf ? C.green : C.gold
+      }
+    }, isConf ? "Confirmed" : "Likely")));
+  })), /*#__PURE__*/React.createElement("tfoot", {
+    style: {
+      position: "sticky",
+      bottom: 0
+    }
+  }, /*#__PURE__*/React.createElement("tr", {
+    style: {
+      background: "#EEF2FF",
+      borderTop: "2px solid ".concat(C.navy)
+    }
+  }, /*#__PURE__*/React.createElement("td", {
+    colSpan: 5,
+    style: {
+      padding: "10px 12px",
+      fontWeight: 800,
+      color: C.navy,
+      fontSize: 12
+    }
+  }, "Showing ", filteredRecon.length, " of ", reconData.length, " records"), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: "10px 12px",
+      textAlign: "right",
+      fontWeight: 800,
+      color: C.navy,
+      fontSize: 12
+    }
+  }, fmtD(filteredRecon.reduce(function (a, r) {
+    return a + r.arv;
+  }, 0))), /*#__PURE__*/React.createElement("td", {
+    colSpan: 2,
+    style: {
+      padding: "10px 12px",
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "Total ARV in view"))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 14,
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "ARV = Annual Recurring Value per Pfitzer CRM. Phone Match = customer phone verified in CallRail record. Source Match = CRM lead source aligns with Pesty-managed channel."))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      margin: "0 28px",
+      paddingTop: 18,
+      borderTop: "1px solid ".concat(C.border),
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "Revenue data: Pfitzer CRM export, Jan 1\u2013Jun 12, 2025 & 2026 \xA0|\xA0 Call data: CallRail export, Jan 1\u2013Jun 15, 2026 \xA0|\xA0 Prepared by Pesty Marketing"));
 }
+var root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(/*#__PURE__*/React.createElement(App, null));
 
-const root=ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App/>);
 </script>
 </body>
 </html>
